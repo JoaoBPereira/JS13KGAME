@@ -1744,10 +1744,9 @@ function getCookie(cname) {
 //********************************************************************************************************************************************************************************************************************************
 
 
-function Hero(arrayBoxEnemies) {
+function Hero() {
     this.Camera = new GL.Vector(0.0, 0.0, 0.0);
     this.arrayEffects = new Array();
-    this.arrayBoxEnemies = arrayBoxEnemies;
     this.health = 1.0;
 
     this.update = function (step) {
@@ -1756,16 +1755,6 @@ function Hero(arrayBoxEnemies) {
             this.arrayEffects[indexEffects].update(step);
 
         removeIsDeadArray(this.arrayEffects);
-
-        var minDistToEnemyScanning = Number.MAX_SAFE_INTEGER;
-        for (var indexEnemies = 0; indexEnemies < this.arrayBoxEnemies.length; indexEnemies++) {
-            if (this.arrayBoxEnemies[indexEnemies].isDead() === false && this.arrayBoxEnemies[indexEnemies].isScanActive) {
-                minDistToEnemyScanning = Math.min(minDistToEnemyScanning, GL.Vector.distance(this.Camera, this.arrayBoxEnemies[indexEnemies].position));
-            }
-        }
-        if (minDistToEnemyScanning < 10.0)
-            playScanSoundEffect(minDistToEnemyScanning);
-
     }
     this.playScanSoundEffect = function (distance) {
     }
@@ -2195,7 +2184,7 @@ var loadCurrentLevel = function () {
     angleY = 0.0;
     joggingAngle = 0;
 
-    hero = new Hero(arrayBoxEnemies);
+    hero = new Hero();
     hero.Camera = new GL.Vector(0.0, 2.0, 0.0);
 
     mazeCL = 3 + this.currentLevel;
@@ -2228,7 +2217,7 @@ var loadCurrentLevel = function () {
     var levelDescription = document.getElementById("levelDescription");
     levelDescription.style.display = "block";
     if (currentLevel === 1) {        
-        levelDescription.innerHTML = "Welcome to Lost in the Maze<br/>Navigate the Maze and find the portal to the next Maze until you are free<br/>Be careful because the evil boxes can scan you and fire at you<br/>Good Luck";
+        levelDescription.innerHTML = "Welcome to Lost in the Maze";
     }
     else {
         levelDescription.innerHTML = "Level " + currentLevel;
@@ -2265,9 +2254,9 @@ function onloadFunction() {
 
 var shader = new GL.Shader('vertex-Maze', 'fragment-Maze');
 var shaderEnemies = new GL.Shader('vertex-Enemy', 'fragment-Enemy');
-var shaderLines = new GL.Shader('vertex-id', 'fragment-id');
 var shaderPortal = new GL.Shader('vertex-Portal', 'fragment-Portal');
-var shaderBullets = new GL.Shader('vertex-Bullets', 'fragment-Bullets');
+var shaderBullets = new GL.Shader('vertex-Enemy', 'fragment-Enemy');
+var shaderHitLines = new GL.Shader('vertex-hitline', 'fragment-hitline');
 
 gl.canvas.onclick = function () {
     if (!isLocked) {
@@ -2474,7 +2463,7 @@ gl.ondraw = function () {
 
     //Bullets
     for (var indexBullets = 0; indexBullets < arrayBullets.length; indexBullets++) {
-        shaderBullets.uniforms({ time: lastStep }).draw(arrayBullets[indexBullets], gl.TRIANGLES);
+        shaderBullets.uniforms({ time: lastStep, color: new GL.Vector(1.0, 0.25, 0.25) }).draw(arrayBullets[indexBullets], gl.TRIANGLES);
     }
 
     //Particles
@@ -2496,7 +2485,7 @@ gl.ondraw = function () {
 
     //HitLines
     for (var indexHitLines = 0; indexHitLines < arrayHitLines.length; indexHitLines++) {
-        shaderBullets.uniforms({ brightness: brig }).draw(arrayHitLines[indexHitLines].mesh, gl.TRIANGLES);
+        shaderHitLines.uniforms().draw(arrayHitLines[indexHitLines].mesh, gl.TRIANGLES);
     }
 
     //EndLevel Mesh

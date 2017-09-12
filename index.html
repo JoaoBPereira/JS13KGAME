@@ -2,137 +2,43 @@
 <html>
 <head>
     <title>Lost in the Maze</title>
-    <style>
-        #gunsight { position: absolute; top: 50%; left: 50%; margin-top: -25px; margin-left: -25px; width: 50px; height: 50px; z-index: 1; }                
-    </style>
-
-    <script id="vertex-id" type="x-shader/x-vertex">
-        varying vec3 normal;
-        void main() {                    
-            normal = gl_Normal;
-            gl_Position = gl_ModelViewProjectionMatrix * (gl_Vertex);
-        }
+    <style>#gunsight { position: absolute; top: 50%; left: 50%; margin-top: -25px; margin-left: -25px; width: 50px; height: 50px; z-index: 1; }</style>    
+    <script id="vertex-hitline" type="x-shader/x-vertex">
+        varying vec3 normal; void main() { normal = gl_Normal; gl_Position = gl_ModelViewProjectionMatrix * (gl_Vertex); }
     </script>
-    <script id="fragment-id" type="x-shader/x-fragment">
-        uniform float brightness;
-        varying vec3 normal;
-        void main() {
-            gl_FragColor = vec4(0.75, 0.1, 0.1, 1.0);
-        }
+    <script id="fragment-hitline" type="x-shader/x-fragment">
+        uniform float brightness; varying vec3 normal; void main() { gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0); }
     </script>
     <script id="vertex-Portal" type="x-shader/x-vertex">
-        attribute vec2 uv;
-        varying vec3 normal;
-        varying vec2 vUv;
-        void main() {
-            vUv = gl_TexCoord.xy;
-            normal = gl_Normal;
-            gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
-        }
+        attribute vec2 uv; varying vec3 normal; varying vec2 vUv;
+        void main() { vUv = gl_TexCoord.xy; normal = gl_Normal; gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex; }
     </script>
     <script id="fragment-Portal" type="x-shader/x-fragment">
-        precision highp float;
-        precision highp int;
-        uniform float time;
-        float xScale = 10.0;
-        float yScale = 10.0;
-        float speed = 10.0;
-        vec3 dotColor = vec3(0.25, 0.75, 0.60);
-        varying vec2 vUv;
-        void main( void ) {
-            vec2 position = ( vUv.xy );
-            float offset = time * speed;
-            float a = sin(3.14 * xScale * position.x + offset);
-            float b = sin(3.14 * yScale * position.y + offset);
-            float color = a * b;
-            gl_FragColor = vec4( clamp( dotColor * color, 0.0, 1.0 ), 1.0);
-        }
-    </script>
-    <script id="vertex-Bullets" type="x-shader/x-vertex">
-        attribute vec2 uv;
-        varying vec3 vPosition;
-        varying vec2 vUv;
-        void main() {
-            vUv = gl_TexCoord.xy;            
-            gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
-            vPosition = vec3(gl_Position.x, gl_Position.y, gl_Position.z);
-        }
-    </script>
-    <script id="fragment-Bullets" type="x-shader/x-fragment">
-        precision highp float;
-        precision highp int;
-        vec3 dotColor = vec3(0.8, 0.1, 0.1);
-        uniform float time;
-        float xScale = 12.0;
-        float yScale = 12.0;
-        float speed = 1.0;        
-        varying vec2 vUv;
-        varying vec3 vPosition;
-        void main( void ) {
-            vec2 position = vUv;
-            float offset = time * speed;
-            float a = sin(3.14 * xScale  * position.x + offset) + cos(3.14 * 50.0 * position.y);
-            float b = sin(3.14 * xScale * 5.0 * position.x) * 1.0 ;
-            float c = sin(3.14 * yScale * position.y + offset * 5.0) + cos(3.14 * 50.0 * position.x);
-            float d = sin(3.14 * yScale * 4.0 * position.y + offset * 1.0);
-            float color = a + b + c + d;
-            gl_FragColor = vec4( dotColor * color, 1.0);
-        }
-    </script>
+        precision highp float; precision highp int; uniform float time; float xScale = 10.0; float yScale = 10.0; float speed = 10.0; vec3 dotColor = vec3(0.25, 0.75, 0.60); varying vec2 vUv;
+        void main( void ) { vec2 position = ( vUv.xy ); float offset = time * speed; float a = sin(3.14 * xScale * position.x + offset); float b = sin(3.14 * yScale * position.y + offset); float color = a * b; gl_FragColor = vec4( clamp( dotColor * color, 0.0, 1.0 ), 1.0); }
+    </script>   
     <script id="vertex-Enemy" type="x-shader/x-vertex">
-        attribute vec2 uv;
-        varying vec2 vUv;
-        void main() {
-            vUv = gl_TexCoord.xy;
-            gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
-            
-        }
+        attribute vec2 uv; varying vec2 vUv;
+        void main() { vUv = gl_TexCoord.xy; gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex; }
     </script>
     <script id="fragment-Enemy" type="x-shader/x-fragment">
-        precision mediump float;
-        varying vec2 vUv;        
-        float speed = 1.0;
-        vec2 resolution = vec2(10.0, 10.0);
-        uniform float time;
-        uniform vec3 color;
-        float rand(vec2 co){
-            return fract(sin(dot(co.xy, vec2(12.9898, 78.233))) * 43758.5453);
-        }
-        void main( void ) {
-            // Divide the coordinates into a grid of squares
-            vec2 v = vUv.xy * resolution;
-            // Calculate a pseudo-random brightness value for each square
-            float brightness = fract(rand(floor(v)) + time*speed);
-            // Reduce brightness in pixels away from the square center
-            brightness *= 0.5 - length(fract(v) - vec2(0.5, 0.5));
-            gl_FragColor = vec4(2.0 * brightness * color, 1.0);
-        }
+        precision mediump float; varying vec2 vUv; float speed = 1.0; vec2 resolution = vec2(10.0, 10.0); uniform float time; uniform vec3 color;
+        float rand(vec2 co){ return fract(sin(dot(co.xy, vec2(12.9898, 78.233))) * 43758.5453); }
+        void main(void) { vec2 v = vUv.xy * resolution; float brightness = fract(rand(floor(v)) + time*speed); brightness *= 0.5 - length(fract(v) - vec2(0.5, 0.5)); gl_FragColor = vec4(2.0 * brightness * color, 1.0); }
     </script>
     <script id="vertex-Maze" type="x-shader/x-vertex">
-        attribute vec2 uv;
-        varying vec3 normal;
-        varying vec2 vUv;
-        void main() {
-            vUv = gl_TexCoord.xy;
-            normal = gl_Normal;
-            gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
-        }
+        attribute vec2 uv; varying vec3 normal; varying vec2 vUv;
+        void main() { vUv = gl_TexCoord.xy; normal = gl_Normal; gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex; }
     </script>
     <script id="fragment-Maze" type="x-shader/x-fragment">
-        vec3 color = vec3 (0.09, 0.32, 0.75);
-        uniform float brightness;
-        float falloff = 4.0;
-        varying vec2 vUv;
-        void main() {
-            vec2 multiplier = pow( abs( vUv - 0.5 ), vec2( falloff ) );
-            gl_FragColor = vec4(color * brightness * length(multiplier), 1.0);
-        }
+        vec3 color = vec3 (0.09, 0.32, 0.75); uniform float brightness; float falloff = 4.0; varying vec2 vUv;
+        void main() { vec2 multiplier = pow( abs( vUv - 0.5 ), vec2( falloff ) ); gl_FragColor = vec4(color * brightness * length(multiplier), 1.0); }
     </script>
 
 </head>
 <body onload="onloadFunction()">
     <img id="gunsight" src="gunsigth.png" />
     <div id="levelDescription" style="position:absolute; width: 100%; z-index: 1; font-family: 'Impact'; font-size: 4.0rem; color:whitesmoke; text-align:center;"></div>   
-    <script src="game.js"></script>
+    <script src="game.min.js"></script>
 </body>
 </html>
